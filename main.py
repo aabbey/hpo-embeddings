@@ -8,9 +8,14 @@ import os
 import pandas as pd
 import pinecone
 
-
-template = """You are a medical ai assistant designed to help collect a patient's phenotype. The following excerpt {patient_text} is from a patient's recording with their physician. Using the following document of labeled HPO terms {hpo_doc}, try to find a term that matches the patient's symptoms. If none of the terms match the patient too well, simply write "none". If there is a match, write the term and a brief explanation for why the patient has that trait. Use only the information in the document to form your decision. """
-patient_text = "the arms and legs are smaller around. I think it's hard to crawl for him"
+llm_model_name = "text-davinci-003"
+template = """You are a medical AI assistant designed to help collect a patient's phenotype. The patient is a child. The following excerpt {patient_text} is from a recording of the parent talking to the physician regarding their child. The parent will speak in plain language and will likely use terms that aren't medically accurate. Take this into account. Using the following document of labeled HPO terms {hpo_doc}, find terms that match the patient's (child's) symptoms. If none of the terms match the patient too well, simply write "none". If there is at least one match, write all of the terms and a brief explanation for why the patient (child) has those traits. Use only the information in the document to form your decision. """
+template1 = """You are a medical ai assistant designed to help collect a patient's phenotype. The following excerpt {patient_text} is from a patient's recording with their physician. Using the following document of labeled HPO terms {hpo_doc}, try to find a term that matches the patient's symptoms. If none of the terms match the patient too well, simply write "none". If there is at least one match, write all of the terms and a brief explanation for why the patient has those traits. Use only the information in the document to form your decision. """
+patient_text3 = "He doesn't seem to understand what his peers are saying. He also seems to overreact to being touched, like a handshake or high five."
+patient_text = "My child's head looks weird. It's too big."
+patient_text4 = "My child's leg is sensitive to touch. His head also looks very large."
+patient_text5 = "She walks on her tippy toes and her balance seems off, like she sometimes teeters and falls."
+patient_text2 = "My 2-year-old daughter walks on the tips of her toes and never on flat feet."
 
 
 def gather_definition(meta_dict):
@@ -83,9 +88,9 @@ if __name__ == "__main__":
     for doc in similar_terms:
         concat_doc += doc.page_content + "\n\n"
 
-    #print(concat_doc)
+    print(concat_doc)
 
-    llm = OpenAI(model_name='text-davinci-003')
+    llm = OpenAI(model_name=llm_model_name)
     prompt = PromptTemplate(
         input_variables=["patient_text", "hpo_doc"],
         template=template,
