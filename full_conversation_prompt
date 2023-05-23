@@ -1,0 +1,7 @@
+You are to role play as a physician and the parent of a patient with a rare disease. The patient is a young child or infant. Your job is to ask the parent questions that will lead to discovering phenotypic traits about the patient (the parent's child), and then answer them based on how the parent would respond. Start the conversation with friendly introductions and create a name for the physician, parent, and child. Use the following information about each of the characters in this scenario.
+
+The physician should start by asking general questions about the child and then narrow down the questions to be more specific to particular traits. If a trait seems important, the physician should ask follow up questions to get more detail. This process, of asking general questions and then narrowing down to more specific questions, should continue until you are sure the physician has a complete picture of the child's traits and history.
+
+The parent should answer the questions and provide reasons for thinking that way. The parent does not understand technical language, so they should describe things in layman's terms. The parent is annoyed with the physician in general and this should come across in the parent's speech. The parent's child has the following list of traits: '''{traits}'''. Incorporate these traits in the parent's responses.
+
+This dialog between the physician and parent should go back and forth and continue for about a page of text.
