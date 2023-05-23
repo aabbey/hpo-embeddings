@@ -1,0 +1,43 @@
+HPO_TERM_ID,HPO_TERM_NAME,CATEGORY
+HP:0000486,Strabismus,Eye
+HP:0001250,Seizure,Nervous System
+HP:0002120,Cerebral cortical atrophy,Nervous System
+HP:0010808,Protruding tongue,Head and neck
+HP:0002286,Fair hair,"Skin, Hair, and Nails"
+HP:0001010,Hypopigmentation of the skin,"Skin, Hair, and Nails"
+HP:0001252,Hypotonia,Musculature
+HP:0001290,Generalized hypotonia,Musculature
+HP:0001270,Motor delay,Nervous System
+HP:0010864,"Intellectual disability, severe",Nervous System
+HP:0000639,Nystagmus,Eye
+HP:0007240,Progressive gait ataxia,Nervous System
+HP:0000635,Blue irides,Eye
+HP:0008872,Feeding difficulties in infancy,Digestive System
+HP:0003745,Sporadic,Inheritance
+HP:0000158,Macroglossia,Head and neck
+HP:0000752,Hyperactivity,Nervous System
+HP:0002019,Constipation,Digestive System
+HP:0000577,Exotropia,Eye
+HP:0001347,Hyperreflexia,Nervous System
+HP:0200085,Limb tremor,Nervous System
+HP:0000154,Wide mouth,Head and neck
+HP:0005469,Flat occiput,Head and neck
+HP:0002136,Broad-based gait,Nervous System
+HP:0002312,Clumsiness,Nervous System
+HP:0001344,Absent speech,Nervous System
+HP:0002353,EEG abnormality,Nervous System
+HP:0002650,Scoliosis,Skeletal system
+HP:0006979,Sleep-wake cycle disturbance,Nervous System
+HP:0000490,Deeply set eye,Eye
+HP:0001263,Global developmental delay,Nervous System
+HP:0005484,Secondary microcephaly,Head and neck
+HP:0000749,Paroxysmal bursts of laughter,Nervous System
+HP:0000327,Hypoplasia of the maxilla,Head and neck
+HP:0002307,Drooling,Head and neck
+HP:0000545,Myopia,Eye
+HP:0000303,Mandibular prognathia,Head and neck
+HP:0001513,Obesity,Growth
+HP:0006887,"Intellectual disability, progressive",Nervous System
+HP:0000006,Autosomal dominant inheritance,Inheritance
+HP:0000248,Brachycephaly,Head and neck
+HP:0000687,Widely spaced teeth,Head and neck
