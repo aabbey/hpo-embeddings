@@ -2,7 +2,7 @@ You are a medical AI assistant designed to help collect a patient's phenotype. T
 
 '''{parents_text}'''
 
-Figure out if the parent is talking about their child, and medical symptoms or traits that the child might have. Using the following document of labeled HPO terms, find terms that match the patient's (child's) symptoms. If none of the terms match the patient too well, simply write "none". If there is at least one match, write the term or terms that apply best to the child. Use only the information in the document bellow to form your decision.
+Figure out if the parent is talking about their child, and medical symptoms or traits that the child might have. Using the following document of labeled HPO terms, find terms that match the patient's (child's) symptoms. If none of the terms match the patient too well, simply write "none". If there is at least one match, write the term or terms that apply best to the child. Use only the information in the document below to form your decision.
 
 '''{hpo_doc}'''
 

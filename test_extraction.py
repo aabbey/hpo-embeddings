@@ -22,11 +22,14 @@ def create_confusion_matrix(predicted_set, actual_set):
 
 
 if __name__ == "__main__":
-    true_terms = {'Sleep-wake cycle disturbance', 'Cerebral cortical atrophy', 'Hypoplasia of the maxilla',
+    true_terms1 = {'Sleep-wake cycle disturbance', 'Cerebral cortical atrophy', 'Hypoplasia of the maxilla',
                   'Limb tremor', 'Fair hair', 'EEG abnormality', 'Constipation', 'Mandibular prognathia', 'Strabismus',
                   'Absent speech', 'Clumsiness', 'Deeply set eye', 'Protruding tongue', 'Hypopigmentation of the skin',
                   'Feeding difficulties in infancy', 'Global developmental delay', 'Blue irides',
                   'Generalized hypotonia', 'Macroglossia', 'Sporadic'}
-    extracted_terms = get_hpo_terms.extract_terms(conversation_path="sample generated transcripts/gpt3.5-sample2-angelman-syndrome")
+    true_terms = {'Hypotonia', 'Deeply set eye', 'EEG abnormality', 'Sleep-wake cycle disturbance', 'Drooling', 'Mandibular prognathia', 'Intellectual disability, severe', 'Blue irides', 'Wide mouth', 'Scoliosis', 'Clumsiness', 'Hyperactivity', 'Hypoplasia of the maxilla', 'Sporadic', 'Cerebral cortical atrophy', 'Intellectual disability, progressive', 'Strabismus', 'Progressive gait ataxia', 'Nystagmus', 'Autosomal dominant inheritance'}
 
+    extracted_terms = get_hpo_terms.extract_terms(conversation_path="sample generated transcripts/gpt4-sample1-angelman")
+
+    print(extracted_terms)
     create_confusion_matrix(extracted_terms, true_terms)
