@@ -19,9 +19,7 @@ with open('prompts/hpo_extractor_template') as t:
     template = ''.join(template)
 
 
-def extract_terms(conversation_path, verbose=True):
-    with open(conversation_path) as t:
-        conversation = t.readlines()
+def extract_terms(transcript, verbose=True):
     if llm_model_name == "text-davinci-003":
         llm = OpenAI(model_name=llm_model_name)
     else:
@@ -37,7 +35,8 @@ def extract_terms(conversation_path, verbose=True):
     vectorstore = Pinecone(index=index, embedding_function=embedding.embed_query, text_key='text')
 
     list_of_extracted_terms = []
-    for line in conversation:
+    for line in transcript.split("\n"):
+        print(line)
         if line.startswith("Parent:"):
             if verbose:
                 print("--------------------\n\n", line, '\n\n')
@@ -74,4 +73,10 @@ def extract_terms(conversation_path, verbose=True):
 
 
 if __name__ == "__main__":
-    extract_terms(conversation_path="sample generated transcripts/gpt3.5-sample2-angelman-syndrome")
+    with open('sample generated transcripts/gpt3.5-sample1-angelman.json', 'r') as json_file:
+        data = json.load(json_file)
+
+    transcript = data['transcript']
+    true_terms = set(data['true_terms'])
+
+    extracted_terms = extract_terms(transcript=transcript, verbose=False)

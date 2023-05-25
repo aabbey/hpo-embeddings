@@ -1,0 +1,39 @@
+HPO_TERM_ID,HPO_TERM_NAME,CATEGORY
+HP:0001992,Organic aciduria,Genitourinary system
+HP:0005979,Metabolic ketoacidosis,Metabolism/Laboratory abnormality
+HP:0410145,Decreased circulating biotinidase concentration,Metabolism/Laboratory abnormality
+HP:0000407,Sensorineural hearing impairment,Ear
+HP:0000707,Abnormality of the nervous system,
+HP:0000988,Skin rash,Immunology
+HP:0001250,Seizure,Nervous System
+HP:0001252,Hypotonia,Musculature
+HP:0001987,Hyperammonemia,Metabolism/Laboratory abnormality
+HP:0002715,Abnormality of the immune system,
+HP:0410263,Brain imaging abnormality,Nervous System
+HP:0000365,Hearing impairment,Ear
+HP:0000478,Abnormality of the eye,
+HP:0000509,Conjunctivitis,Eye
+HP:0000575,Scotoma,Eye
+HP:0000648,Optic atrophy,Eye
+HP:0000976,Eczematoid dermatitis,Immunology
+HP:0001138,Optic neuropathy,Eye
+HP:0001249,Intellectual disability,Nervous System
+HP:0001251,Ataxia,Nervous System
+HP:0001254,Lethargy,Nervous System
+HP:0001596,Alopecia,"Skin, Hair, and Nails"
+HP:0002069,Bilateral tonic-clonic seizure,Nervous System
+HP:0002098,Respiratory distress,Respiratory System
+HP:0002104,Apnea,Respiratory System
+HP:0002123,Generalized myoclonic seizure,Nervous System
+HP:0002196,Myelopathy,Nervous System
+HP:0002313,Spastic paraparesis,Nervous System
+HP:0002841,Recurrent fungal infections,Immunology
+HP:0002883,Hyperventilation,Respiratory System
+HP:0003690,Limb muscle weakness,Limbs
+HP:0004429,Recurrent viral infections,Immunology
+HP:0005401,Recurrent candida infections,Immunology
+HP:0006511,Laryngeal stridor,Respiratory System
+HP:0011153,Focal motor seizure,Nervous System
+HP:0012469,Infantile spasms,Nervous System
+HP:0001263,Global developmental delay,Nervous System
+HP:0200068,Nonprogressive visual loss,Eye
