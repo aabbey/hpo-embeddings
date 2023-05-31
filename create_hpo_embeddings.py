@@ -1,11 +1,47 @@
 import json
 import os
+import sys
 import pinecone
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.llms import OpenAI
 from langchain.vectorstores import Chroma, Pinecone
 import pandas as pd
 import numpy as np
+
+
+class Tree:
+    def __init__(self):
+        self.tree = {}
+        self.parents = {}
+
+    def add_edge(self, sub, obj):
+        if obj in self.tree:
+            self.tree[obj].add(sub)
+        else:
+            self.tree[obj] = set([sub])
+
+        self.parents[sub] = obj
+
+    def get_children(self, id):
+        if id in self.tree:
+            return self.tree[id]
+        else:
+            return []
+
+    def get_parent(self, id):
+        if id in self.parents:
+            return self.parents[id]
+        else:
+            return None
+
+
+def create_tree_from_list(list_of_dicts):
+    tree = Tree()
+    for dic in list_of_dicts:
+        tree.add_edge(dic["sub"], dic["obj"])
+    return tree
+
+
 
 #  If true, this will populate the pinecone vector database with new embeddings.
 #  If already have, no need to make true, or run this script.
@@ -50,10 +86,17 @@ if __name__ == "__main__":
         data = json.load(f)
 
     hpo_data = data['graphs'][0]['nodes']
+    edges_list = data['graphs'][0]['edges']
+    tree_of_ids = create_tree_from_list(edges_list)
+
+    #print(tree_of_ids.get_parent("http://purl.obolibrary.org/obo/HP_0000010"))
+    #print(tree_of_ids.get_children("http://purl.obolibrary.org/obo/HP_0000010"))
+
     hpo_data_df = pd.DataFrame(hpo_data)
 
     simple_hpo_df = pd.DataFrame(columns=['id', 'lbl', 'definition', 'comments'])
 
+    simple_hpo_df['id_full'] = hpo_data_df['id']
     simple_hpo_df['id'] = hpo_data_df['id'].apply(lambda x: str(x)[-10:])
     simple_hpo_df['lbl'] = hpo_data_df['lbl']
     simple_hpo_df['definition'] = hpo_data_df['meta'].apply(gather_definition)
