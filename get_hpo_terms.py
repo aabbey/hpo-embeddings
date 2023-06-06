@@ -1,3 +1,4 @@
+
 import sys
 import openai
 from langchain import LLMChain, PromptTemplate
@@ -17,6 +18,46 @@ llm_model_name = "text-davinci-003"
 with open('prompts/hpo_extractor_template') as t:
     template = t.readlines()
     template = ''.join(template)
+
+
+def make_hpo_tree():
+    class Tree:
+        def __init__(self):
+            self.tree = {}
+            self.parents = {}
+
+        def add_edge(self, sub, obj):
+            if obj in self.tree:
+                self.tree[obj].add(sub)
+            else:
+                self.tree[obj] = set([sub])
+
+            self.parents[sub] = obj
+
+        def get_children(self, id):
+            if id in self.tree:
+                return self.tree[id]
+            else:
+                return []
+
+        def get_parent(self, id):
+            if id in self.parents:
+                return self.parents[id]
+            else:
+                return None
+
+    def create_tree_from_list(list_of_dicts):
+        tree = Tree()
+        for dic in list_of_dicts:
+            tree.add_edge(dic["sub"], dic["obj"])
+        return tree
+
+    with open('hp.json') as f:
+        data = json.load(f)
+
+    edges_list = data['graphs'][0]['edges']
+    tree_of_ids = create_tree_from_list(edges_list)
+    return tree_of_ids
 
 
 def extract_terms(transcript, verbose=True):

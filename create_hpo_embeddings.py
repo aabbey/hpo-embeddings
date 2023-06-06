@@ -89,8 +89,10 @@ if __name__ == "__main__":
     edges_list = data['graphs'][0]['edges']
     tree_of_ids = create_tree_from_list(edges_list)
 
-    #print(tree_of_ids.get_parent("http://purl.obolibrary.org/obo/HP_0000010"))
-    #print(tree_of_ids.get_children("http://purl.obolibrary.org/obo/HP_0000010"))
+    print(tree_of_ids.get_parent("http://purl.obolibrary.org/obo/HP_0001167"))
+    print(tree_of_ids.get_children("http://purl.obolibrary.org/obo/HP_0001167"))
+    print(tree_of_ids.get_parent("http://purl.obolibrary.org/obo/HP_0001155"))
+    print(tree_of_ids.get_children("http://purl.obolibrary.org/obo/HP_0001155"))
 
     hpo_data_df = pd.DataFrame(hpo_data)
 
