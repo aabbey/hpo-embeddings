@@ -65,11 +65,9 @@ def make_hpo_dataframe():
     simple_hpo_df['lbl'] = hpo_data_df['lbl']
     simple_hpo_df['definition'] = hpo_data_df['meta'].apply(gather_definition)
     simple_hpo_df['comments'] = hpo_data_df['meta'].apply(gather_comments)
-    print(simple_hpo_df)
-    simple_hpo_df = simple_hpo_df.loc[simple_hpo_df['type'] == '/HP'].dropna()
-    print(simple_hpo_df)
-
-    simple_hpo_df['id_int'] = simple_hpo_df['id'].apply(lambda x: int(str(x)[-7:]))
+    #print(simple_hpo_df)
+    #simple_hpo_df = simple_hpo_df.loc[simple_hpo_df['type'] == '/HP'].dropna()
+    #print(simple_hpo_df)
 
     simple_hpo_df['text_to_embed'] = simple_hpo_df.apply(str_to_embed, axis=1)
 
@@ -121,6 +119,41 @@ def extract_terms(transcript, verbose=True):
         llm = OpenAI(model_name=llm_model_name)
     else:
         llm = ChatOpenAI(model_name=llm_model_name)
+        list_of_extracted_terms = []
+        for line in transcript.split("\n"):
+            print(line)
+            if line.startswith("Parent:"):
+                if verbose:
+                    print("--------------------\n\n", line, '\n\n')
+
+                child_list = list(hpo_tree.get_children('http://purl.obolibrary.org/obo/HP_0000118'))
+
+                child_list_docs = hpo_df['text_to_embed'].loc[hpo_df['id'].isin(child_list)].to_list()
+                concat_doc = ""
+                for doc in child_list_docs:
+                    concat_doc += doc.page_content + "\n\n"
+
+                if verbose:
+                    print(concat_doc)
+
+                prompt = PromptTemplate(
+                    input_variables=["parents_text", "hpo_doc"],
+                    template=template,
+                )
+
+                chain = LLMChain(llm=llm, prompt=prompt)
+
+                # Run the chain only specifying the input variable.
+                llm_response = chain.run({"parents_text": line, "hpo_doc": concat_doc})
+                for term in llm_response.split(', '):
+                    term = term.strip()
+                    if term.lower().rstrip('.') != 'none':
+                        list_of_extracted_terms.append(term)
+                if verbose:
+                    print(llm_response)
+
+
+
     embedding = OpenAIEmbeddings(openai_api_key=os.environ['OPENAI_API_KEY'])
     pinecone.init(
         api_key=os.environ['PINECONE_API_KEY'],
@@ -161,10 +194,10 @@ def extract_terms(transcript, verbose=True):
                     list_of_extracted_terms.append(term)
             if verbose:
                 print(llm_response)
-    if verbose:
-        print("\n----------------------------\n\n")
+
     set_of_extracted_terms = set(list_of_extracted_terms)
     if verbose:
+        print("\n----------------------------\n\n")
         print("Extracted terms : ", set(list_of_extracted_terms))
     return set_of_extracted_terms
 
@@ -182,7 +215,7 @@ if __name__ == "__main__":
     print(hpo_df['text_to_embed'].loc[hpo_df['id'] == 'http://purl.obolibrary.org/obo/HP_0000118'], '\n\n')
     child_list = list(hpo_tree.get_children('http://purl.obolibrary.org/obo/HP_0000118'))
 
-    print(hpo_df['text_to_embed'].loc[child_list])
+    print(hpo_df['lbl'].loc[hpo_df['id'].isin(child_list)])
 
     sys.exit()
 
