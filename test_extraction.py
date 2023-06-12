@@ -1,4 +1,4 @@
-import get_hpo_terms
+import extract
 import conversation_direct
 import matplotlib.pyplot as plt
 from matplotlib_venn import venn2, venn2_circles

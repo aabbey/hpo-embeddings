@@ -98,8 +98,8 @@ if __name__ == "__main__":
 
     simple_hpo_df = pd.DataFrame(columns=['id', 'lbl', 'definition', 'comments'])
 
-    simple_hpo_df['id_full'] = hpo_data_df['id']
-    simple_hpo_df['id'] = hpo_data_df['id'].apply(lambda x: str(x)[-10:])
+    simple_hpo_df['id'] = hpo_data_df['id']
+    simple_hpo_df['id_reduced'] = hpo_data_df['id'].apply(lambda x: str(x)[-10:])
     simple_hpo_df['lbl'] = hpo_data_df['lbl']
     simple_hpo_df['definition'] = hpo_data_df['meta'].apply(gather_definition)
     simple_hpo_df['comments'] = hpo_data_df['meta'].apply(gather_comments)
