@@ -12,8 +12,8 @@ import os
 import pandas as pd
 import pinecone
 
-#llm_model_name = "gpt-3.5-turbo"
-llm_model_name = "text-davinci-003"
+llm_model_name = "gpt-3.5-turbo"
+#llm_model_name = "text-davinci-003"
 
 with open('prompts/hpo_extractor_template') as t:
     template = t.readlines()
@@ -115,6 +115,7 @@ def make_hpo_tree():
 
 
 def extract_terms(transcript, verbose=True):
+    list_of_extracted_terms = []
     if llm_model_name == "text-davinci-003":
         llm = OpenAI(model_name=llm_model_name)
     else:
@@ -126,31 +127,52 @@ def extract_terms(transcript, verbose=True):
                 if verbose:
                     print("--------------------\n\n", line, '\n\n')
 
-                child_list = list(hpo_tree.get_children('http://purl.obolibrary.org/obo/HP_0000118'))
+                tree_searching = True
+                ids_to_search = ['http://purl.obolibrary.org/obo/HP_0000118']
+                loop_num = 0
+                while tree_searching:
+                    if verbose:
+                        print(f"Searching tree loop {loop_num} ...\n")
 
-                child_list_docs = hpo_df['text_to_embed'].loc[hpo_df['id'].isin(child_list)].to_list()
-                concat_doc = ""
-                for doc in child_list_docs:
-                    concat_doc += doc.page_content + "\n\n"
+                    for id in ids_to_search:
+                        child_list = list(hpo_tree.get_children(id))
 
-                if verbose:
-                    print(concat_doc)
+                        child_list_docs = hpo_df['text_to_embed'].loc[hpo_df['id'].isin(child_list)].to_list()
+                        concat_doc = ""
+                        for doc in child_list_docs:
+                            concat_doc += doc + "\n\n"
 
-                prompt = PromptTemplate(
-                    input_variables=["parents_text", "hpo_doc"],
-                    template=template,
-                )
+                        if verbose:
+                            print(concat_doc)
 
-                chain = LLMChain(llm=llm, prompt=prompt)
+                        prompt = PromptTemplate(
+                            input_variables=["parents_text", "hpo_doc"],
+                            template=template,
+                        )
 
-                # Run the chain only specifying the input variable.
-                llm_response = chain.run({"parents_text": line, "hpo_doc": concat_doc})
-                for term in llm_response.split(', '):
-                    term = term.strip()
-                    if term.lower().rstrip('.') != 'none':
-                        list_of_extracted_terms.append(term)
-                if verbose:
-                    print(llm_response)
+                        chain = LLMChain(llm=llm, prompt=prompt)
+
+                        # Run the chain only specifying the input variable.
+                        llm_response = chain.run({"parents_text": line, "hpo_doc": concat_doc})
+                        next_ids = []
+                        for term in llm_response.split(', '):
+                            term = term.strip()
+                            if term.lower().rstrip('.') != 'none':
+                                next_ids.append(hpo_df['id'].where(hpo_df['lbl'] == term))
+                            else:
+                                if ids_to_search[0] == 'http://purl.obolibrary.org/obo/HP_0000118':
+                                    tree_searching = False
+                                    break
+                                else:
+                                    list_of_extracted_terms.append(hpo_df['lbl'].where(hpo_df['id'] == id))
+                        ids_to_search.remove(id)
+                        ids_to_search += next_ids
+                        if not ids_to_search:
+                            tree_searching = False
+                        if verbose:
+                            print(llm_response)
+        set_of_extracted_terms = set(list_of_extracted_terms)
+        return set_of_extracted_terms
 
 
 
@@ -164,7 +186,6 @@ def extract_terms(transcript, verbose=True):
 
     vectorstore = Pinecone(index=index, embedding_function=embedding.embed_query, text_key='text')
 
-    list_of_extracted_terms = []
     for line in transcript.split("\n"):
         print(line)
         if line.startswith("Parent:"):
@@ -212,11 +233,6 @@ if __name__ == "__main__":
     hpo_tree = make_hpo_tree()
     hpo_df = make_hpo_dataframe()
 
-    print(hpo_df['text_to_embed'].loc[hpo_df['id'] == 'http://purl.obolibrary.org/obo/HP_0000118'], '\n\n')
     child_list = list(hpo_tree.get_children('http://purl.obolibrary.org/obo/HP_0000118'))
 
-    print(hpo_df['lbl'].loc[hpo_df['id'].isin(child_list)])
-
-    sys.exit()
-
-    extracted_terms = extract_terms(transcript=transcript, verbose=False)
+    extracted_terms = extract_terms(transcript=transcript, verbose=True)
