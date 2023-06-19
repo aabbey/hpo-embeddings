@@ -1,5 +1,6 @@
 
 import sys
+import re
 import openai
 from langchain import LLMChain, PromptTemplate
 from langchain.embeddings import OpenAIEmbeddings
@@ -20,6 +21,7 @@ import pinecone
 
 llm_model_name = "gpt-3.5-turbo"
 #llm_model_name = "text-davinci-003"
+MAX_LAYER_DEPTH = 10
 
 with open('prompts/hpo_extractor_template') as t:
     template = t.readlines()
@@ -71,9 +73,6 @@ def make_hpo_dataframe():
     simple_hpo_df['lbl'] = hpo_data_df['lbl']
     simple_hpo_df['definition'] = hpo_data_df['meta'].apply(gather_definition)
     simple_hpo_df['comments'] = hpo_data_df['meta'].apply(gather_comments)
-    #print(simple_hpo_df)
-    #simple_hpo_df = simple_hpo_df.loc[simple_hpo_df['type'] == '/HP'].dropna()
-    #print(simple_hpo_df)
 
     simple_hpo_df['text_to_embed'] = simple_hpo_df.apply(str_to_embed, axis=1)
 
@@ -242,7 +241,61 @@ def extract_terms(transcript, verbose=True):
     return set_of_extracted_terms
 
 
+def terms_to_docs(term_list):
+    under_docs = hpo_df.loc[hpo_df['lbl'].isin(term_list), 'text_to_embed'].values
+    return "\n\n".join(under_docs)
+
+
+def most_similar(bad_term):
+    """
+    use to retrieve a term in our hpo_df that is semantically similar to the bad_term
+    """
+    similar_term_doc = vector_store.similarity_search(bad_term, k=1)[0]
+    similar_term = hpo_df.loc[hpo_df['text_to_embed'] == similar_term_doc.page_content, 'lbl'].values[0]
+    return similar_term
+
+
+def layer_loop(parent_text, current_upper_term):
+    """
+    use this to get llm reasoning about the parent text line in context of the tree of hpo terms.
+    it decides whether to go down another level to find the most specific term.
+    :param parent_text: line from the parent
+    :param current_upper_term: general term about patient phenotype
+    :return: more specific term, and flag to stop loop
+    """
+    under_terms = specify_term(current_upper_term)
+    if not under_terms.any():
+        return current_upper_term, True
+    concat_doc = terms_to_docs(under_terms)
+    cur_term_doc = terms_to_docs([current_upper_term])
+    concat_doc = cur_term_doc + "\n\n" + concat_doc
+
+    ch4_hist[0] = sys_msg_prompt4.format_messages(cur_trait_doc=cur_term_doc, concated_under_term_docs=concat_doc)[0]
+    response4 = llm(ch4_hist)
+    print(response4.content)
+    clean_response4 = response4.content.strip().lstrip("label: ").rstrip(".")
+
+    # correct if not a real term
+    if clean_response4 not in hpo_df['lbl'].unique():
+        print("Picking close hpo term...")
+        clean_response4 = most_similar(clean_response4)
+        print(clean_response4)
+
+    return clean_response4, False
+
+
+
 if __name__ == "__main__":
+    # create vector_store for semantic similarity search later
+    embedding = OpenAIEmbeddings(openai_api_key=os.environ['OPENAI_API_KEY'])
+    pinecone.init(
+        api_key=os.environ['PINECONE_API_KEY'],
+        environment=os.environ['PINECONE_API_ENV']
+    )
+    index_name = "hpo-embeddings"
+    index = pinecone.Index(index_name)
+    vector_store = Pinecone(index=index, embedding_function=embedding.embed_query, text_key='text')
+
     with open('sample generated transcripts/gpt4-sample1-Biotinidase.json', 'r') as json_file:
         data = json.load(json_file)
     with open("prompts/etrct_prompt_1.txt", 'r') as p:
@@ -251,6 +304,8 @@ if __name__ == "__main__":
         prompt2 = p.read()
     with open("prompts/extract_prompt_3.txt", 'r') as p:
         prompt3 = p.read()
+    with open("prompts/extract_prompt_4.txt", 'r') as p:
+        prompt4 = p.read()
 
     transcript = data['transcript']
     true_terms = set(data['true_terms'])
@@ -267,9 +322,11 @@ if __name__ == "__main__":
     sys_msg_prompt2 = SystemMessage(content=prompt2)
     ch2_hist = [sys_msg_prompt2]
     sys_msg_prompt3 = SystemMessagePromptTemplate.from_template(prompt3)
-    print(sys_msg_prompt3)
     ch3_hist = [sys_msg_prompt3]
+    sys_msg_prompt4 = SystemMessagePromptTemplate.from_template(prompt4)
+    ch4_hist = [sys_msg_prompt4]
 
+    extracted_terms = []
     for line in transcript.split("\n"):
         print(line)
         if line.startswith("Parent:"):
@@ -294,8 +351,27 @@ if __name__ == "__main__":
                     print(response3.content)
                     ch3_hist.append(response3)
 
+                    # remove prepending "line num: " from llm output
+                    response3 = re.sub(r"line \d: ", "", response3.content)
+                    response_hits = [resp for resp in response3.split('\n')]
+                else:
+                    response_hits = [response2.content]
 
-    print(f"\n\n{ch1_hist} \n\n{ch2_hist}")
+                for resp in response_hits:
+                    current_upper_term = "Phenotypic abnormality"
+                    ch4_hist.append(HumanMessage(content=resp))
+                    for layer in range(1, MAX_LAYER_DEPTH):
+                        next_term, stop_loop = layer_loop(resp, current_upper_term)
+                        if stop_loop:
+                            extracted_terms.append(current_upper_term)
+                            break
+                        if next_term == current_upper_term or next_term.lower().strip().rstrip('.') == "none":
+                            extracted_terms.append(current_upper_term)
+                            break
+                        current_upper_term = next_term
+
+    print(f"\n\n{ch1_hist} \n\n{ch2_hist} \n\n{ch2_hist} \n\n{ch2_hist} \n\n")
+    print("Extracted Terms : ", set(extracted_terms))
     sys.exit()
 
     extracted_terms = extract_terms(transcript=transcript, verbose=True)
