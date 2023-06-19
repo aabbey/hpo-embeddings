@@ -3,6 +3,12 @@ import sys
 import openai
 from langchain import LLMChain, PromptTemplate
 from langchain.embeddings import OpenAIEmbeddings
+from langchain.schema import (
+    AIMessage,
+    HumanMessage,
+    SystemMessage
+)
+from langchain.prompts import SystemMessagePromptTemplate
 from langchain.llms import OpenAI
 from langchain.chat_models import ChatOpenAI
 from langchain.vectorstores import Chroma, Pinecone
@@ -112,6 +118,19 @@ def make_hpo_tree():
     edges_list = data['graphs'][0]['edges']
     tree_of_ids = create_tree_from_list(edges_list)
     return tree_of_ids
+
+
+def specify_term(hpo_term):
+    """
+    use this to find children of given hpo term to find a more specific term to match to the patient
+    :param hpo_term: parent term
+    :return: list of child terms
+    """
+    parent_term_id = hpo_df.loc[hpo_df['lbl'] == hpo_term, 'id'].values[0]
+    child_id_list = list(hpo_tree.get_children(parent_term_id))
+    child_list = hpo_df.loc[hpo_df['id'].isin(child_id_list), 'lbl'].values
+
+    return child_list
 
 
 def extract_terms(transcript, verbose=True):
@@ -224,8 +243,14 @@ def extract_terms(transcript, verbose=True):
 
 
 if __name__ == "__main__":
-    with open('sample generated transcripts/gpt3.5-sample1-angelman.json', 'r') as json_file:
+    with open('sample generated transcripts/gpt4-sample1-Biotinidase.json', 'r') as json_file:
         data = json.load(json_file)
+    with open("prompts/etrct_prompt_1.txt", 'r') as p:
+        prompt1 = p.read()
+    with open("prompts/extract_prompt_2.txt", 'r') as p:
+        prompt2 = p.read()
+    with open("prompts/extract_prompt_3.txt", 'r') as p:
+        prompt3 = p.read()
 
     transcript = data['transcript']
     true_terms = set(data['true_terms'])
@@ -233,6 +258,44 @@ if __name__ == "__main__":
     hpo_tree = make_hpo_tree()
     hpo_df = make_hpo_dataframe()
 
-    child_list = list(hpo_tree.get_children('http://purl.obolibrary.org/obo/HP_0000118'))
+    llm = ChatOpenAI(model_name=llm_model_name, temperature=0)
+    list_of_extracted_terms = []
+
+    # start the first llm with a sys message. the loop bellow will then add human msgs
+    sys_msg_prompt = SystemMessage(content=prompt1)
+    ch1_hist = [sys_msg_prompt]
+    sys_msg_prompt2 = SystemMessage(content=prompt2)
+    ch2_hist = [sys_msg_prompt2]
+    sys_msg_prompt3 = SystemMessagePromptTemplate.from_template(prompt3)
+    print(sys_msg_prompt3)
+    ch3_hist = [sys_msg_prompt3]
+
+    for line in transcript.split("\n"):
+        print(line)
+        if line.startswith("Parent:"):
+            print("--------------------\n\n", line, '\n\n')
+
+            ch1_hist.append(HumanMessage(content=line))
+            response = llm(ch1_hist)
+            print(response.content)
+            ch1_hist.append(response)
+
+            if response.content.lower().strip().rstrip('.') == "yes":
+                ch2_hist.append(HumanMessage(content=line))
+                response2 = llm(ch2_hist)
+                print(response2.content)
+                ch2_hist.append(response2)
+
+                clean_response2 = response2.content.lower().strip().rstrip('.')
+                if clean_response2 != "one":
+                    ch3_hist[0] = sys_msg_prompt3.format_messages(number=clean_response2)[0]
+                    ch3_hist.append(HumanMessage(content=line))
+                    response3 = llm(ch3_hist)
+                    print(response3.content)
+                    ch3_hist.append(response3)
+
+
+    print(f"\n\n{ch1_hist} \n\n{ch2_hist}")
+    sys.exit()
 
     extracted_terms = extract_terms(transcript=transcript, verbose=True)
