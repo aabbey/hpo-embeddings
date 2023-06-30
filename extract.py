@@ -263,25 +263,17 @@ def layer_loop(parent_text, current_upper_term):
     :param current_upper_term: general term about patient phenotype
     :return: more specific term, and flag to stop loop
     """
-    under_terms = specify_term(current_upper_term)
-    if not under_terms.any():
+    under_terms = specify_term(current_upper_term).tolist()
+    if not under_terms:
         return current_upper_term, True
-    concat_doc = terms_to_docs(under_terms)
-    cur_term_doc = terms_to_docs([current_upper_term])
-    concat_doc = cur_term_doc + "\n\n" + concat_doc
+    under_terms.append(current_upper_term)
 
-    ch4_hist[0] = sys_msg_prompt4.format_messages(cur_trait_doc=cur_term_doc, concated_under_term_docs=concat_doc)[0]
-    response4 = llm(ch4_hist)
-    print(response4.content)
-    clean_response4 = response4.content.strip().lstrip("label: ").rstrip(".")
+    terms_to_search = hpo_df.index[hpo_df['lbl'].isin(under_terms)].tolist()
+    similar_term_doc = vector_store.similarity_search(parent_text, k=1, filter={"df_index": {"$in": terms_to_search}})[0]
+    similar_term = hpo_df.loc[hpo_df['text_to_embed'] == similar_term_doc.page_content, 'lbl'].values[0]
+    print(similar_term)
 
-    # correct if not a real term
-    if clean_response4 not in hpo_df['lbl'].unique():
-        print("Picking close hpo term...")
-        clean_response4 = most_similar(clean_response4)
-        print(clean_response4)
-
-    return clean_response4, False
+    return similar_term, False
 
 
 

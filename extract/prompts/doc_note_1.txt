@@ -1,0 +1,4 @@
+The following text is a line from a clinician's notes on a patient, followed by an AI's interpretation of whether the line contains any phenotype data. Reason about what phenotype the patient might have, then select the most relevant HPO term for this phenotype.
+
+text:
+{line_and_interp}
