@@ -205,9 +205,18 @@ if __name__ == "__main__":
             terms_in_line = []
             id1 = line.find(": ")
             id2 = [m.start() for m in re.finditer("HP:", line)]
-            idall = [id1] + id2
-            for t in range(len(idall)-1):
-                terms_in_line.append(line[idall[t] + len(line[idall[t]]): idall[t+1] - 1].strip())
+            id_all = [id1] + id2
+
+            line_hpo = line.split(": ")[1]
+            print(line_hpo)
+            line_terms = line_hpo.split("and")
+            print(line_terms)
+
+            for t in line_terms:
+                id_end = t.find("HP:")
+                new_term = t[: id_end-1].strip()
+                print("new term : ", new_term)
+                terms_in_line.append(new_term)
 
             for term in terms_in_line:
                 if term in hpo_df['lbl'].unique():
