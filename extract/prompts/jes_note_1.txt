@@ -1,0 +1,10 @@
+The following notes are for a patient who is a young child. For every bullet point, make your best guess about the most accurate HPO term that the child has. If there are three bullet points, for example, produce three HPO terms. If no HPO term can explain the bullet point, write "None." If the are multiple HPO terms that can describe a single bullet point, list each of the terms. Your response should list out each of the bullets followed by a colon and the HPO term. For example:
+
+- Tall and slender build: Marfanoid habitus (HP:0001519)
+- Long limbs and digits: Arachnodactyly (HP:0001166)
+- Chest deformities: Pectus excavatum (HP:0000767) and Pectus carinatum (HP:0000768)
+
+Patient notes:
+"""
+{doc}
+"""
