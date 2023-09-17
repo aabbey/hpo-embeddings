@@ -19,7 +19,8 @@ import os
 import pandas as pd
 import pinecone
 
-llm_model_name = "gpt-3.5-turbo"
+llm_model_name = "gpt-4"
+NOTES_DOC = "extract/raw_text_inputs/first_patient_jessime_notes.txt"
 #llm_model_name = "text-davinci-003"
 MAX_LAYER_DEPTH = 10
 
@@ -55,7 +56,7 @@ def make_hpo_dataframe():
                 string_template += f"{comment} \n"
         return string_template
 
-    with open('../hp.json') as f:
+    with open('hp.json') as f:
         data = json.load(f)
 
     hpo_data = data['graphs'][0]['nodes']
@@ -107,7 +108,7 @@ def make_hpo_tree():
             tree.add_edge(dic["sub"], dic["obj"])
         return tree
 
-    with open('../hp.json', 'r') as f:
+    with open('hp.json', 'r') as f:
         data = json.load(f)
 
     edges_list = data['graphs'][0]['edges']
@@ -175,17 +176,17 @@ if __name__ == "__main__":
     index = pinecone.Index(index_name)
     vector_store = Pinecone(index=index, embedding_function=embedding.embed_query, text_key='text')
 
-    with open('raw_text_inputs/sample_jessime_interview_notes.txt', 'r') as t:
+    with open(NOTES_DOC, 'r') as t:
         notes = t.read()
-    with open("prompts/jes_note_sysmsg.txt", 'r') as p:
+    with open("extract/prompts/jes_note_sysmsg.txt", 'r') as p:
         sys_prompt1 = p.read()
-    with open("prompts/jes_note_1.txt", 'r') as p:
+    with open("extract/prompts/jes_note_1.txt", 'r') as p:
         prompt1 = p.read()
 
     hpo_tree = make_hpo_tree()
     hpo_df = make_hpo_dataframe()
 
-    llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+    llm = ChatOpenAI(model_name=llm_model_name, temperature=0)
     list_of_extracted_terms = []
 
     # start the first llm with a sys message. the loop bellow will then add human msgs

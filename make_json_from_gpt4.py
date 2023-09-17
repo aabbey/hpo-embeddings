@@ -7,7 +7,7 @@ from random import sample
 
 sample_number = 1
 disease_name = "Biotinidase"
-sample_pheno_path = 'sample disease phenotypes/terms_for_Biotinidase Deficiency.csv'
+sample_pheno_path = 'samples/sample disease phenotypes/terms_for_Biotinidase Deficiency.csv'
 num_traits_to_use = 20
 
 

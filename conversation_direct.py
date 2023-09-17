@@ -11,7 +11,7 @@ from langchain.prompts import ChatPromptTemplate, PromptTemplate, SystemMessageP
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 import json
 
-full_example_traits = pd.read_csv('sample disease phenotypes/Angelman syndrome 1')
+full_example_traits = pd.read_csv('samples/sample disease phenotypes/Angelman syndrome 1')
 
 with open('prompts/full_conversation_prompt') as t:
     prompt_template = t.readlines()
@@ -33,6 +33,6 @@ if __name__ == '__main__':
         'true_terms': traits_to_use
     }
 
-    with open('sample generated transcripts/gpt3.5-sample1-angelman.json', 'w') as json_file:
+    with open('samples/sample generated transcripts/gpt3.5-sample1-angelman.json', 'w') as json_file:
         json.dump(data, json_file, indent=4)
 

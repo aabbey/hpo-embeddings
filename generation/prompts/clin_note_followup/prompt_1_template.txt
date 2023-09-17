@@ -1,0 +1,7 @@
+Given the following clinician notes, construct a summary of the known phenotype information, only for the one patient being discussed. After that, list some questions that you could ask the patient, or the patient's parent, that could clarify the phenotype of the patient. These questions need to both broaden, and deepen our understanding of the patient's phenotype. For example, if the description of the phenotypic traits in the clinician notes only covers a small set of traits of a particular type, but you suspect there might be another type of trait that would be of interest, then you should construct a question that will reveal that new type of trait in the patient. For another example, if the clinician notes describe a trait too vaguely, and you know there is a more specific term that can be revealed that would be medically relevant to know, include that question in your list.
+After each question, briefly describe why you chose this question. For example, how would the question reveal medically relevant phenotype discovery? And what information was lacking in the clinician notes that would require this follow-up question?
+
+clinician notes:
+"""
+{clin_notes}
+"""

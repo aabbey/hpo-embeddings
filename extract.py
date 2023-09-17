@@ -296,7 +296,7 @@ if __name__ == "__main__":
     index = pinecone.Index(index_name)
     vector_store = Pinecone(index=index, embedding_function=embedding.embed_query, text_key='text')
 
-    with open('sample generated transcripts/gpt4-sample1-Biotinidase.json', 'r') as json_file:
+    with open('samples/sample generated transcripts/gpt4-sample1-Biotinidase.json', 'r') as json_file:
         data = json.load(json_file)
     with open("prompts/etrct_prompt_1.txt", 'r') as p:
         prompt1 = p.read()

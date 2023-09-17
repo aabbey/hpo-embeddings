@@ -9,6 +9,12 @@ import pandas as pd
 import numpy as np
 
 
+#  If true, this will populate the pinecone vector database with new embeddings.
+#  If already have, no need to make true, or run this script.
+CREATE_NEW_HPO_EMBEDDINGS = True
+index_name = "hpo-embeddings"
+
+
 class Tree:
     def __init__(self):
         self.tree = {}
@@ -40,12 +46,6 @@ def create_tree_from_list(list_of_dicts):
     for dic in list_of_dicts:
         tree.add_edge(dic["sub"], dic["obj"])
     return tree
-
-
-
-#  If true, this will populate the pinecone vector database with new embeddings.
-#  If already have, no need to make true, or run this script.
-CREATE_NEW_HPO_EMBEDDINGS = False
 
 
 def make_hpo_dataframe():
@@ -114,8 +114,8 @@ if __name__ == "__main__":
         api_key=os.environ['PINECONE_API_KEY'],
         environment=os.environ['PINECONE_API_ENV']
     )
-    index_name = "hpo-embeddings"
     index = pinecone.Index(index_name)
+    print("index connected success")
 
     ind_dicts = []
     for i in hpo_df.index:
