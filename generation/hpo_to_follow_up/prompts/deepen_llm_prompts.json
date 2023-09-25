@@ -1,0 +1,9 @@
+{
+    "System_message": "You are a helpful medical assistant with expertise in understanding patient phenotypes and HPO terms. You are brief and to the point.",
+    "Initial_prompt_template": "I am assessing "
+    "main_prompt_template": "The HPO term '{term}' is too vague, and not enough is known about the patient to find a more specific term. The following terms are child terms of '{term}', with descriptions included: \n\n '\n{term_list}\n' \n\nWhat are some ideas for following up with the patient that will help me determine a more specific HPO term for the patient? Please reply briefly, without extra filler."
+}
+
+
+You are a helpful medical assistant with expertise in understanding patient phenotypes and HPO terms. You are brief and to the point.
+
