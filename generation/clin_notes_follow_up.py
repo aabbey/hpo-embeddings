@@ -14,9 +14,14 @@ MODEL_NAME = "gpt-4"
 
 if __name__ == '__main__':
 
+    llm = OpenAI(model_name="gpt-4")
+    response = llm("Hi, are you gpt-4?")
+    print(response)
+    sys.exit()
+
     llm = ChatOpenAI(model=MODEL_NAME, temperature=0.0)
 
-    with open("generation/prompts/clin_note_followup/sysmsg.txt", "r") as f:
+    with open("generation/prompts/clin_note_followup/broaden_llm_sysmsg.txt", "r") as f:
         sysmsg_file = f.read()
 
     with open("samples/sample_clinician_notes/gpt_gen_1.txt", "r") as f:
@@ -39,7 +44,8 @@ if __name__ == '__main__':
     first_p_response = llm(llm_chat_hist)
     print(first_p_response.content)
 
-    # next step : should be more specific about hpo terms.
-
-    sys.exit()
+    # next steps :
+    #   - split prompts.
+    #   - separate evaluation llm for each question generated
+    #   - evaluation llm for hpo term gen
 
