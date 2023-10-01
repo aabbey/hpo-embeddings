@@ -1,8 +1,0 @@
-Given the following clinician notes, construct a summary of the known phenotype information, only for the one patient being discussed. Then, generate a list of HPO terms for the patient.
-After that, list five to ten questions that you could ask the patient, or the patient's parent, that could clarify the HPO terms of the patient. These questions need to both broaden, and deepen our understanding of the patient's phenotype. For example, if the HPO terms only covers a small set of traits of a particular type, but you suspect there might be another type of trait that would be of interest, then you should construct a question that will reveal that new type of trait in the patient. For another example, an HPO term is too general, and you know there is a more specific term that can be revealed that would be medically relevant to know, include that question in your list.
-After each question, briefly describe why you chose this question. For example, what more relevant HPO terms would you find? And why would these terms be more relevant?
-
-clinician notes:
-"""
-{clin_notes}
-"""
