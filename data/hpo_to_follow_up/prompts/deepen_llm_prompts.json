@@ -1,6 +1,16 @@
 {
-    "system_message": "You are a helpful medical assistant with expertise in understanding patient phenotypes with genetic causes, and HPO terms. You are brief and to the point.",
-    "initial_prompt_template": "I am assessing the medical case of a child with some unknown genetic condition, and trying to construct an accurate phenotype of the patient, expressed as HPO terms. The following is a description of the patient and the case, along with some HPO terms for the patient that I am trying to refine: \n\n'''\n{description}\n''' \n\n'''\n{current_hpo_terms}\n'''",
-    "main_prompt_template": "The HPO term '{term}' is too vague, and not enough is known about the patient to find a more specific term. The following terms are child terms of '{term}', with definitions included: \n\n '''\n{term_list}\n''' \n\nWhat are some ideas for follow up questions that I can ask the patient that will help me determine a more specific HPO term for the patient, without conducting any new tests? Please reply briefly, without extra filler, starting with '1. '.",
-    "explain_follow_up_prompt": "Expain your thought process for each of questions you generated so I can better understand why those questions were selected. Start your response with 'Explanation:\n' and do not add extra filler."
+    "main_deepen_chain": {
+        "system_message": "You are a helpful medical assistant with expertise in understanding patient phenotypes with genetic causes, and HPO terms. You are brief and to the point.",
+        "initial_prompt_template": "I am assessing the medical case of a child with some unknown genetic condition, and trying to construct an accurate phenotype of the patient, expressed as HPO terms. The following is a description of the patient and the case, along with some HPO terms for the patient that have been collected through tests and doctor visits: \n\n***\n{description}\n*** \n\n***\n{current_hpo_terms}\n***",
+        "specify_prompt": "List out the HPO terms again, and after each one, decide whether the provided term is specific enough, or if I should potentially ask follow-up questions to the patient's family in order to find a more specific HPO term. Start your response with '1. '",
+        "form_ques_prompt_template": "Here are some excerpts from clinician notes on this case, that provide evidence and context for the HPO terms that need more detail, followed by child terms of the HPO term that might be relavant: \n***\n{term_excerpt_child_combo}\n***\nGenerate a few bullet points directed at a medical consultant who is coming up with follow up questions to ask the patient in order to understand the patient's phenotypic anomalies in more depth."
+    },
+    "extract_excerpts": {
+        "system_message": "You are a helpful medical assistant with expertise in extracting context for HPO terms in medical documents.",
+        "main_prompt_template": "Here are some clinician notes for a complex medical case. Extract out an excerpt, or a few excerpts, that provide evidence for, or further context for, the HPO term: '{hpo_term}'. Put the excerpt or excerpts in quotes and start and finnish the excerpt with ellipses to show that it came from within the document.\n***\n{clinician_notes}\n***\nRemember to start and end each quote with ellipses: '...[exerpt]...'"
+    },
+    "select_deepen_terms": {
+        "system_message": "You are a simple bot that is exellent at extracting exact terms. You only respond with a list of terms, no extra filler.",
+        "main_prompt_template": "These are some notes on whether a medical term is specific enough. Please list out the term or terms that the note-taker has decided are not specific enough. \n***\nNotes:\n{AI_notes}\n***"
+    }
 }

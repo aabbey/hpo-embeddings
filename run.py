@@ -5,12 +5,22 @@ from hpo_extract import hpo_to_follow_up
 
 def run_hpo_to_follow_up(input_dict):
     deepen_llm = ChatOpenAI(model=hpo_to_follow_up.MODEL_NAME, temperature=0.0)
-    deepen_llm_prompts = hpo_to_follow_up.load_prompts()
+    extract_excerpts_llm = ChatOpenAI(
+        model=hpo_to_follow_up.EXTRACT_EXCERPTS_MODEL_NAME, temperature=0.0
+    )
+    select_deepen_terms_llm = ChatOpenAI(
+        model=hpo_to_follow_up.SELECT_DEEPEN_TERMS_MODEL_NAME, temperature=0.0
+    )
+    llms = {
+        "deepen_llm": deepen_llm,
+        "extract_excerpts_llm": extract_excerpts_llm,
+        "select_deepen_terms_llm": select_deepen_terms_llm,
+    }
+    all_deepen_llm_prompts = hpo_to_follow_up.load_prompts()
     deepen_chain_output = hpo_to_follow_up.run_deepen_chain(
         input_dict=input_dict,
-        llm=deepen_llm,
-        prompts=deepen_llm_prompts,
-        show_work=True,
+        llms=llms,
+        prompts=all_deepen_llm_prompts,
     )
 
     return deepen_chain_output
@@ -21,7 +31,4 @@ if __name__ == "__main__":
 
     deepen_chain_output = run_hpo_to_follow_up(hpo_to_follow_up_input)
 
-    for generation in deepen_chain_output.generations:
-        print(generation[0].text)
-
-    print(deepen_chain_output.llm_output)
+    print(deepen_chain_output)

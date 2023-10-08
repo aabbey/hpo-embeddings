@@ -1,0 +1,42 @@
+CLINICIAN NOTES
+
+Patient: Jamie Anderson
+DOB: 03/15/2021
+MRN: 4578923
+Date of Visit: 09/29/2023
+Consulting Genetic Counselor: Dr. Jane A. Smith
+
+Reason for Consultation:
+Jamie was referred for an ongoing evaluation due to a range of anomalies noted since birth.
+
+Observations & History:
+Jamie presents with a noticeably elongated head shape. During infancy, there was a premature fusion of the sagittal suture, leading to consultations with neurologists. Recent skull measurements showed a significant narrowing between the 
+parietal bones.
+
+Cardiac evaluations have revealed a narrowing of the aortic valve, causing increased resistance to the left ventricle's outflow. Upon auscultation during physical examinations, a notable murmur was detected, consistent with a systolic 
+heart murmur.
+
+Developmentally, Jamie exhibits delays consistent with intellectual challenges. Various assessments have been conducted to gauge the severity, and the findings indicate mild to moderate intellectual disability.
+
+Clinical Evaluations & Tests:
+
+Echocardiogram: Demonstrated a reduced opening at the aortic valve, with notable flow resistance.
+CT scan of the skull: Indicated premature fusion of cranial sutures and narrowing of the skull's width.
+Developmental Assessment: Varied scores across domains but consistent findings of cognitive delays.
+Genetic Testing:
+Genetic evaluations were sought to determine a potential underlying rare condition. Although a comprehensive panel including karyotyping, chromosomal microarray, and whole exome sequencing was performed, results were inconclusive.
+
+Family History:
+Jamie's family history does not suggest any hereditary patterns for the observed anomalies. Parents report no known familial congenital issues and are not closely related. Jamie's older sibling does not show any of these characteristics.
+
+Impressions & Recommendations:
+Given the complexity of Jamie's presentation, it is challenging to pinpoint a singular condition or syndrome. Although certain syndromes might have overlapping features, none seem to perfectly encapsulate Jamie's profile.
+
+We recommend continued monitoring of Jamie's cardiac function, especially the aortic valve's integrity. Regular neurologist consultations are essential to address the head shape and potential intracranial pressure concerns.
+
+Further genetic evaluations or specialized testing may be considered, and I have recommended a team-based approach involving a cardiologist, neurologist, and possibly a clinical geneticist. I've encouraged the family to stay proactive in 
+Jamie's developmental therapies, given the cognitive delays observed.
+
+A follow-up consultation is scheduled in a month to discuss any new findings or changes.
+
+End of Notes.

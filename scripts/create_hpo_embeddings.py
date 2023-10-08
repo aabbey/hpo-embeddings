@@ -11,8 +11,10 @@ import numpy as np
 
 #  If true, this will populate the pinecone vector database with new embeddings.
 #  If already have, no need to make true, or run this script.
-CREATE_NEW_HPO_EMBEDDINGS = True
-index_name = "hpo-embeddings"
+CREATE_NEW_HPO_EMBEDDINGS = False
+CREATE_NEW_HPO_TERM_EMBEDDINGS = False
+INDEX_NAME = "hpo-embeddings"
+TERM_ONLY_INDEX = "hpo-term-embeddings"
 
 
 class Tree:
@@ -114,7 +116,8 @@ if __name__ == "__main__":
         api_key=os.environ["PINECONE_API_KEY"],
         environment=os.environ["PINECONE_API_ENV"],
     )
-    index = pinecone.Index(index_name)
+    index = pinecone.Index(INDEX_NAME)
+    term_only_index = pinecone.Index(TERM_ONLY_INDEX)
     print("index connected success")
 
     ind_dicts = []
@@ -122,14 +125,16 @@ if __name__ == "__main__":
         ind_dicts.append({"df_index": i, "lbl": hpo_df.iloc[i]["lbl"]})
 
     # only run once to embed hpo terms
+    if CREATE_NEW_HPO_TERM_EMBEDDINGS:
+        embsearch = Pinecone.from_texts(
+            hpo_df["lbl"].tolist(), embedding, index_name=TERM_ONLY_INDEX
+        )
     if CREATE_NEW_HPO_EMBEDDINGS:
         embsearch = Pinecone.from_texts(
             hpo_df["text_to_embed"].tolist(),
             embedding,
-            index_name=index_name,
+            index_name=INDEX_NAME,
             metadatas=ind_dicts,
         )
 
-    vectorstore = Pinecone(
-        index=index, embedding_function=embedding.embed_query, text_key="text"
-    )
+    vectorstore = (Pinecone(term_only_index, embedding, "text"),)
