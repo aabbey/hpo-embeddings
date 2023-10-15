@@ -1,2 +1,5 @@
 .idea
 __pycache__
+vec_searches.py
+term_ids.json
+term_ids_vecs.json

@@ -1,0 +1,10 @@
+{
+    "main_extract_llm": {
+        "system_message": "You are a helpful medical assistant with expertise in extracting HPO terms from medical documents. You know all the exact term names, and only use official HPO terms.",
+        "prompt": "Extract out all HPO terms that belong to the patient in the following clinician notes.\n***\n{clinician_notes}\n***\nRespond with a list of terms, but for each term, quote an excerpt, or a few excerpts, from the clinician notes that provide evidence or context for the given HPO term. The excerpts should be in quotes and ellipses to show they came from the document, e.g. \"...[excerpt]...\" - [term]"
+    },
+    "get_term_list_llm": {
+        "system_message": "You are a simple bot that is exellent at extracting exact terms. You only respond with a list of terms, no extra filler.",
+        "prompt": "These are some medical excerpts followed by phenotype terms:\n***\n{term_evidence}\n***\nPlease extract out just the term names into a list. Each term follows the quotes provided, e.g. \"...[excerpt]...\" - [term]"
+    }
+}

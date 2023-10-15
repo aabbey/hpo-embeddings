@@ -1,6 +1,9 @@
+from loguru import logger
+
 from langchain.chat_models import ChatOpenAI
 
 from hpo_extract import hpo_to_follow_up
+from hpo_extract import extract
 
 
 def run_hpo_to_follow_up(input_dict):
@@ -26,9 +29,28 @@ def run_hpo_to_follow_up(input_dict):
     return deepen_chain_output
 
 
-if __name__ == "__main__":
-    hpo_to_follow_up_input = hpo_to_follow_up.load_input()
+def run_extract(input_text):
+    extract_llm = ChatOpenAI(model=extract.MODEL_NAME, temperature=0)
+    term_list_llm = ChatOpenAI(model=extract.TERM_LIST_MODEL_NAME, temperature=0)
 
+    llms = {"extract_llm": extract_llm, "term_list_llm": term_list_llm}
+
+    all_extract_prompts = extract.load_prompts()
+
+    extract_chain_output = extract.run_extract_chain(
+        in_text=input_text, llms=llms, prompts=all_extract_prompts
+    )
+
+    return extract_chain_output
+
+
+if __name__ == "__main__":
+    clin_notes = extract.load_input()
+    extract_output = run_extract(clin_notes)
+
+    print(extract_output)
+
+    hpo_to_follow_up_input = hpo_to_follow_up.load_input()
     deepen_chain_output = run_hpo_to_follow_up(hpo_to_follow_up_input)
 
     print(deepen_chain_output)

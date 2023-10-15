@@ -1,4 +1,5 @@
 import json
+from loguru import logger
 
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from langchain.prompts import (
@@ -44,7 +45,6 @@ def load_prompts():
 def initialize_llm_chats(all_prompts):
     """
     Takes a dictionary of all the prompts associated with all the models in the chain, and converts them into langchain prompts and prompt templates.
-
     """
     new_all_prompts = {}
     for llm_name, prompts in all_prompts.items():
@@ -106,15 +106,26 @@ def can_be_formatted(s: str) -> bool:
 
 
 def run_deepen_chain(input_dict, llms, prompts, show_work=False):
+    """Runs chain to collect follow up question ideas that will help specify HPO terms that are too general.
+
+    Args:
+        input_dict (dict): dict of inputs (patient description, hpo term) and clin notes
+        llms (dict): each llm used in chain
+        prompts (dict): all prompts (as strings) to be used
+        show_work (bool, optional): llms explain themselves along the way. Defaults to False.
+
+    Returns:
+        str: text output of chain
+    """
     patient_description = input_dict.get("patieint_description")
     current_hpo_terms = str(input_dict.get("hpo_terms"))
 
     child_terms_dict = get_child_terms(input_dict.get("hpo_terms"))
+    # subset the hpo terms to those that have children if there are a lot of terms. Only do so if there are more than 2 terms with children.
     if (
         len(input_dict.get("hpo_terms")) > MANY_HPO_TERMS
         and len(list(child_terms_dict.keys())) > 2
     ):
-        # subset the hpo terms to those that have children if there are a lot of terms. Only do so if there are more than 2 terms with children.
         current_hpo_terms = str(list(child_terms_dict.keys()))
 
     all_prompts = initialize_llm_chats(
@@ -148,24 +159,19 @@ def run_deepen_chain(input_dict, llms, prompts, show_work=False):
         ]
     )
 
+    # start of chain
     deepen_chain = LLMChain(llm=deepen_llm, prompt=deepen_chat_template)
     deepen_out_1 = deepen_chain.run(
         description=patient_description, current_hpo_terms=current_hpo_terms
     )
-
-    print(deepen_out_1)
-
-    print()
-    print()
+    logger.info(deepen_out_1)
 
     select_term_chain = create_openai_fn_chain(
         [pass_list], select_deepen_terms_llm, select_terms_chat_template
     )
 
     select_term_out = select_term_chain.run(AI_notes=deepen_out_1)
-    print()
-    print(select_term_out)
-    print()
+    logger.info(select_term_out)
 
     extract_excerpts_chain = LLMChain(
         llm=extract_excerpts_llm, prompt=extract_excerpts_chat_template
@@ -185,20 +191,14 @@ def run_deepen_chain(input_dict, llms, prompts, show_work=False):
         excerpts_out = extract_excerpts_chain.run(
             hpo_term=term, clinician_notes=input_dict.get("clinician_notes")
         )
-        print(excerpts_out)
+        logger.info(excerpts_out)
 
         term_excerpt_child_combo.append(
             f"{term}:\n{excerpts_out}\nChild terms: {child_terms}"
         )
-        print()
-        print()
 
     term_excerpt_child_combo = "\n\n".join(term_excerpt_child_combo)
-
-    print(term_excerpt_child_combo)
-    print()
-    print()
-    print()
+    logger.info(term_excerpt_child_combo)
 
     deepen_chain.prompt = ChatPromptTemplate.from_messages(
         [
@@ -209,17 +209,17 @@ def run_deepen_chain(input_dict, llms, prompts, show_work=False):
             main_deepen_chain_prompts.get("form_ques_prompt_template"),
         ]
     )
-    print(deepen_chain.prompt)
-    print()
-    print()
-    print()
+    logger.info(deepen_chain.prompt)
 
     deepen_out_2 = deepen_chain.run(
         description=patient_description,
         current_hpo_terms=current_hpo_terms,
         term_excerpt_child_combo=term_excerpt_child_combo,
     )
-
-    print(deepen_out_2)
+    logger.info(deepen_out_2)
 
     return deepen_out_2
+
+
+def run_broaden_chain(input_dict, llms, prompts, show_work=False):
+    pass
