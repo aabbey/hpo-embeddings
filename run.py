@@ -138,7 +138,7 @@ def run_create_hpo_direct(nord_path):
     with open(nord_path, "r") as f:
         nord_dict = json.load(f)
 
-    hpo_terms = gen_hpo_direct(nord_dict)
+    hpo_terms = create_hpo_direct(nord_dict)
 
     save_terms_dict = {
         "disease_name": nord_dict["disease_name"],
@@ -150,7 +150,7 @@ def run_create_hpo_direct(nord_path):
 
 async def run_create_hpo_direct_async(nord_path):
     loop = asyncio.get_running_loop()
-    return await loop.run_in_executor(None, run_gen_hpo_direct, nord_path)
+    return await loop.run_in_executor(None, run_create_hpo_direct, nord_path)
 
 
 async def run_multiple_create_hpo_direct(input_folder, output_folder, n):
@@ -162,7 +162,7 @@ async def run_multiple_create_hpo_direct(input_folder, output_folder, n):
 
     for input_file in input_files:
         print(f"Processing {input_file}")
-        tasks = [run_gen_hpo_direct_async(input_file) for _ in range(n)]
+        tasks = [run_create_hpo_direct_async(input_file) for _ in range(n)]
         results = await asyncio.gather(*tasks)
 
         output_data = {
