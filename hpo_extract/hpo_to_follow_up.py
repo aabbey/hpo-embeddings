@@ -42,6 +42,17 @@ def load_prompts():
     return deepen_llm_prompts
 
 
+def initialize_broaden_chats(prompts):
+    chat_prompt_template = ChatPromptTemplate.from_messages(
+        [
+            SystemMessage(content=prompts.get("system_message")),
+            HumanMessagePromptTemplate.from_template(prompts.get("prompt_1")),
+        ]
+    )
+
+    return chat_prompt_template
+
+
 def initialize_llm_chats(all_prompts):
     """
     Takes a dictionary of all the prompts associated with all the models in the chain, and converts them into langchain prompts and prompt templates.
@@ -222,4 +233,41 @@ def run_deepen_chain(input_dict, llms, prompts, show_work=False):
 
 
 def run_broaden_chain(input_dict, llms, prompts, show_work=False):
-    pass
+    chat_prompt_template = initialize_broaden_chats(prompts)
+
+    broaden_chain = LLMChain(llm=llms.get("broaden_llm"), prompt=chat_prompt_template)
+    broaden_out_1 = broaden_chain.run(
+        description=input_dict.get("patieint_description"),
+        terms_list=input_dict.get("hpo_terms"),
+    )
+    logger.info(broaden_out_1)
+
+    broaden_chain.prompt = ChatPromptTemplate.from_messages(
+        chat_prompt_template.messages
+        + [
+            AIMessage(content=broaden_out_1),
+            HumanMessage(content=prompts.get("prompt_2")),
+        ]
+    )
+
+    broaden_out_2 = broaden_chain.run(
+        description=input_dict.get("patieint_description"),
+        terms_list=input_dict.get("hpo_terms"),
+    )
+    logger.info(broaden_out_2)
+
+    broaden_chain.prompt = ChatPromptTemplate.from_messages(
+        chat_prompt_template.messages
+        + [
+            AIMessage(content=broaden_out_2),
+            HumanMessage(content=prompts.get("prompt_3")),
+        ]
+    )
+
+    broaden_out_3 = broaden_chain.run(
+        description=input_dict.get("patieint_description"),
+        terms_list=input_dict.get("hpo_terms"),
+    )
+    logger.info(broaden_out_2)
+
+    return broaden_out_3

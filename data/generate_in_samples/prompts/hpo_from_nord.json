@@ -1,0 +1,11 @@
+{
+    "main_prompts": {
+        "system_message": "You are a helpful medical assistant with expertise in extracting HPO terms from medical documents. You know all the exact term names, and only use official HPO terms.",
+        "prompt_1": "Generate 15-20 HPO terms for a hypothetical medical case involving a young child with the rare disease, '{disease_name}'. The following is an overview of the disease, signs and symptoms, causes, and treatments for the disease:\n***\nDISEASE OVERVIEW\n{disease_overview}\nSIGNS & SYMPTOMS\n{signs_symptoms}\nCAUSES\n{causes}\n***\nUse only this information (mostly 'signs & symptoms') when constructing your HPO terms.",
+        "prompt_2": "Remember to construct a realistic set of terms that could conceivable all belong to the fictional patient. Be creative and first write a brief summary of what kind of fictional case this is, in order to ground your choices of HPO terms, then pick very specific and interesting terms. Do not include the term ID numbers, just use the name of the term."
+    },
+    "select_terms_prompts": {
+        "system_message": "You are a simple bot that is exellent at extracting exact terms. You only respond with a list of terms, no extra filler.",
+        "prompt": "These are some notes on a medical case that contains a list of HPO terms. Please list out each term in the list, with only the term name.\n***\nNotes:\n{ai_output}\n***\nRemember, only list the term names, not the IDs."
+    }
+}

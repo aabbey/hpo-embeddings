@@ -1,0 +1,6 @@
+{
+    "system_message": "You are a medical expert with extensive knowledge of HPO terms.",
+    "prompt_1": "Here is a list of HPO terms for a fictional patient, along with a brief description of the patient and history:\n***{description}\n\n{terms_list}\n***\nWhat are some other HPO terms that might be present given this list, and why? Be creative. What are some connections between terms that can indicate some other HPO terms that don't seem obvious?",
+    "prompt_2": "Which of these new terms are most likely to be medically relevant for finding a diagnosis, and why? Are there any other HPO terms that could be asked about that would help a diagnosis?",
+    "prompt_3": "What are some ideas to ask about? Direct your response to a medical consultant who will have a phone interview with the family of the patient and take your ideas into account. Make sure to explain your reasoning and link each point to how it will help gather phenotype information for a potential diagnosis. Start your response with '1. '"
+}

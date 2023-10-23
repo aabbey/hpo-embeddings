@@ -70,7 +70,7 @@ def can_be_formatted(s: str) -> bool:
 
 def augmented_sim_search(text, llm, k_length=15):
     sysmsg = "You are a midecal expert that understands phenotypes and HPO terms."
-    prompt_temp = "A report has proposed an HPO term for a patient phenotype that says: '{wrong_term}', however that is not a term that is currently in the HPO database. Take your best guess as to which of these actual HPO terms is most likely meant by the proposed term. Terms to choose from: {sim_terms_list}\nYou must choose only one term from the list."
+    prompt_temp = "A report has proposed an HPO term for a patient phenotype that says: '{wrong_term}', however that is not a term that is currently in the HPO database. Take your best guess as to which of these actual HPO terms is most likely meant by the proposed term. Terms to choose from: {sim_terms_list}\nYou must choose exactly one term from the list."
 
     sim_terms_list = [
         HPO_VECTORS.similarity_search(text, k=k_length)[x].page_content
@@ -111,7 +111,7 @@ def run_extract_chain(in_text, llms, prompts, show_work=False):
         show_work (bool, optional): llms explain themselves along the way. Defaults to False.
 
     Returns:
-        str: text output of chain
+        set: output of chain, set of valid terms
     """
     all_prompts = initialize_llm_chats(
         prompts

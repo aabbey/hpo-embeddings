@@ -1,0 +1,5 @@
+{
+    "system_message": "You are a medical assistant, excellent at writing sample clinician notes for fake rare disease patients. You never use the actual name of the disease in the notes, because the notes will be used for training afterward.",
+    "main_prompt": "Generate fictional clinician notes, that are extensive and detailed, for a young child with the rare disease, '{disease_name}'. Generate the notes as if there were a real patient with symptoms of the disease, who has gone through some treatments and tests, but still has no official diagnosis. The following is an overview of the disease, signs and symptoms, causes, and treatments for the disease:\n***\nDISEASE OVERVIEW\n{disease_overview}\n\nSIGNS & SYMPTOMS\n{signs_symptoms}\n\nCAUSES\n{causes}\n\nSTANDARD THERAPIES{standard_therapies}\n***\nUse this information when constructing your fictional notes.",
+    "second_prompt": "Please provide fictional names and dates, so the notes are complete and can pass for actual clinician notes. Remember to not use the name of the disease, '{disease_name}' in your clinician notes."
+} 
