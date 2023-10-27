@@ -90,27 +90,9 @@ def calc_dist(set_a, set_b, term_ids_vecs):
     b_vecs = np.zeros((len(set_b), 1536))
 
     for i, a in enumerate(set_a):
-        try:
-            a_vecs[i] = term_ids_vecs[a]["vector"]
-        except KeyError:
-            llm = ChatOpenAI(model=SIM_SEARCH_MODEL, temperature=0)
-            key = augmented_sim_search(a, llm)
-            try:
-                a_vecs[i] = term_ids_vecs[key]["vector"]
-            except KeyError:
-                key = HPO_VECTORS.similarity_search(key, k=1)[0].page_content
-                a_vecs[i] = term_ids_vecs[key]["vector"]
+        a_vecs[i] = term_ids_vecs[a]["vector"]
     for i, b in enumerate(set_b):
-        try:
-            b_vecs[i] = term_ids_vecs[b]["vector"]
-        except KeyError:
-            llm = ChatOpenAI(model=SIM_SEARCH_MODEL, temperature=0)
-            key = augmented_sim_search(b, llm)
-            try:
-                b_vecs[i] = term_ids_vecs[key]["vector"]
-            except KeyError:
-                key = HPO_VECTORS.similarity_search(key, k=1)[0].page_content
-                b_vecs[i] = term_ids_vecs[key]["vector"]
+        b_vecs[i] = term_ids_vecs[b]["vector"]
 
     distance_matrix = pairwise_distances(a_vecs, b_vecs, metric="euclidean")
 
@@ -122,3 +104,82 @@ def calc_dist(set_a, set_b, term_ids_vecs):
     ) / np.sqrt(len(b_min))
 
     return loss
+
+
+def get_distance_matrix(set_a, set_b, term_ids_vecs):
+    a_vecs = np.zeros((len(set_a), 1536))
+    b_vecs = np.zeros((len(set_b), 1536))
+
+    for i, a in enumerate(set_a):
+        a_vecs[i] = term_ids_vecs[a]["vector"]
+    for i, b in enumerate(set_b):
+        b_vecs[i] = term_ids_vecs[b]["vector"]
+
+    distance_matrix = pairwise_distances(a_vecs, b_vecs, metric="euclidean")
+
+    return distance_matrix
+
+
+def make_terms_dist_table(unique_terms1, unique_terms2, distance_matrix):
+    """makes table to compare 2 sets of terms
+
+    Args:
+        terms1 (dict): "sample_name": "sample", "hpo_terms": [terms]
+        terms2 (dict): "sample_name": "sample", "hpo_terms": [terms]
+        distance_matrix (np array): distance metric between each term in the 2 inputs
+    """
+
+    list1 = unique_terms1["hpo_terms"]
+    list2 = unique_terms2["hpo_terms"]
+    distance_matrix_og = distance_matrix.copy()
+
+    table = {
+        unique_terms1["sample_name"]: [],
+        unique_terms2["sample_name"]: [],
+        "dist": [],
+    }
+
+    for i in range(min(np.shape(distance_matrix))):
+        x, y = np.unravel_index(distance_matrix.argmin(), distance_matrix.shape)
+        table[unique_terms1["sample_name"]].append(list1[x])
+        table[unique_terms2["sample_name"]].append(list2[y])
+        table["dist"].append(distance_matrix[x][y])
+        list1 = np.delete(list1, x)
+        list2 = np.delete(list2, y)
+        distance_matrix = np.delete(distance_matrix, x, axis=0)
+        distance_matrix = np.delete(distance_matrix, y, axis=1)
+
+    if len(list1) != 0:
+        for term in list1:
+            table[unique_terms1["sample_name"]].append(term)
+            table[unique_terms2["sample_name"]].append("")
+            table["dist"].append(np.nan)
+    if len(list2) != 0:
+        for term in list2:
+            table[unique_terms2["sample_name"]].append(term)
+            table[unique_terms1["sample_name"]].append("")
+            table["dist"].append(np.nan)
+
+    return table
+
+
+def find_connected_components(adj_matrix):
+    def dfs(node, visited, component_nodes):
+        visited[node] = True
+        component_nodes.append(node)
+        for neighbor, isConnected in enumerate(adj_matrix[node]):
+            if isConnected and not visited[neighbor]:
+                dfs(neighbor, visited, component_nodes)
+
+    n = len(adj_matrix)
+    visited = [False] * n
+    components = 0
+
+    for i in range(n):
+        if not visited[i]:
+            component_nodes = []
+            dfs(i, visited, component_nodes)
+            if len(component_nodes) > 1:
+                components += 1
+
+    return components

@@ -58,6 +58,54 @@ def make_hpo_dataframe():
     return simple_hpo_df
 
 
+def make_hpo_dag():
+    class DAG:
+        def __init__(self):
+            self.graph = {}
+            self.parents = {}
+
+        def add_edge(self, sub, obj):
+            # Add sub as a child of obj
+            if obj in self.graph:
+                self.graph[obj].add(sub)
+            else:
+                self.graph[obj] = set([sub])
+
+            # Add obj as a parent of sub
+            if sub in self.parents:
+                self.parents[sub].add(obj)
+            else:
+                self.parents[sub] = set([obj])
+
+        def get_children(self, id):
+            return self.graph.get(id, set())
+
+        def get_parents(self, id):
+            return self.parents.get(id, set())
+
+        def get_ancestors(self, node_id):
+            """Returns the upper set (all ancestors) of a node."""
+            ancestors = set()
+            direct_parents = self.get_parents(node_id)
+            ancestors.update(direct_parents)
+            for parent in direct_parents:
+                ancestors.update(self.get_ancestors(parent))
+            return ancestors
+
+    def create_dag_from_list(list_of_dicts):
+        dag = DAG()
+        for dic in list_of_dicts:
+            dag.add_edge(dic["sub"], dic["obj"])
+        return dag
+
+    with open("data/hp.json", "r") as f:
+        data = json.load(f)
+
+    edges_list = data["graphs"][0]["edges"]
+    tree_of_ids = create_dag_from_list(edges_list)
+    return tree_of_ids
+
+
 def make_hpo_tree():
     class Tree:
         def __init__(self):
@@ -110,6 +158,14 @@ def create_hpo_vector_store():
     return vector_store
 
 
+def get_terms_vectors():
+    with open("/Users/alex.abbey/Projects/hpo-extraction/term_ids_vecs.json", "r") as f:
+        term_ids_vecs = json.load(f)
+    return term_ids_vecs
+
+
 HPO_VECTORS = create_hpo_vector_store()
 HPO_TREE = make_hpo_tree()
+HPO_DAG = make_hpo_dag()
 HPO_DF = make_hpo_dataframe()
+TERM_IDS_VECS = get_terms_vectors()
