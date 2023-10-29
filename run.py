@@ -11,6 +11,8 @@ import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
+import leidenalg
+import igraph as ig
 
 from hpo_extract import hpo_to_follow_up, extract, generate_in_samples, compare_phenos
 from hpo_extract.setup_data import TERM_IDS_VECS
@@ -183,7 +185,7 @@ async def run_multiple_create_hpo_direct(input_folder, output_folder, n):
 
 
 def run_hpo_graph_cluster(
-    input_dir, out_png, sample_key, metrics, cluster_factor=4, sim_thresh=0.95
+    input_dir, out_png, sample_key, metrics="default", cluster_factor=4, sim_thresh=0.95
 ):
     """_summary_
 
@@ -195,72 +197,29 @@ def run_hpo_graph_cluster(
         cluster_factor (int, optional): _description_. Defaults to 4.
         sim_thresh (float, optional): _description_. Defaults to 0.95.
     """
-    all_sample_phenos = {}
-    for filename in os.listdir(input_dir):
-        if filename.endswith(".json"):
-            with open(os.path.join(input_dir, filename), "r") as file:
-                data = json.load(file)
-                all_sample_phenos[filename[:-5]] = data
-    logger.info(all_sample_phenos)
+    all_sample_phenos = compare_phenos.load_cluster_input(input_dir=input_dir)
 
-    master_list = []
-    mapping_key = {}
-    for filename, data in all_sample_phenos.items():
-        disease_name = data[sample_key].replace(" ", "_")
-        for idx, terms_set in enumerate(data["hpo_terms_sets"]):
-            master_list.append(terms_set)
-            mapping_key[(len(master_list) - 1)] = f"{disease_name}_{idx+1}"
+    if metrics == "IC":
+        graph = compare_phenos.make_sim_graph(
+            all_sample_phenos=all_sample_phenos,
+            sample_key=sample_key,
+            sim_thresh=sim_thresh,
+            cluster_factor=cluster_factor,
+        )
+    else:
+        graph = compare_phenos.make_graph(
+            all_sample_phenos=all_sample_phenos,
+            sample_key=sample_key,
+            sim_thresh=sim_thresh,
+            cluster_factor=cluster_factor,
+        )
 
-    matrix_size = len(master_list)
-    matrix = [[0.0 for _ in range(matrix_size)] for _ in range(matrix_size)]
-
-    for i in range(matrix_size):
-        for j in range(matrix_size):
-            if i != j:
-                matrix[i][j] = compare_phenos.calc_dist(
-                    set(master_list[i]), set(master_list[j]), TERM_IDS_VECS
-                )
-    matrix_np = np.array(matrix)
-    logger.info(mapping_key)
-
-    matrix_flipped = matrix_np**-1
-    matrix_flipped[matrix_flipped == np.inf] = 0
-
-    matrix_flipped[matrix_flipped < sim_thresh] = 0
-    # comunities = compare_phenos.find_connected_components(matrix_flipped)
-
-    matrix_scaled = matrix_flipped**cluster_factor
-
-    G = nx.Graph()
-    for key, value in mapping_key.items():
-        G.add_node(key, label=value, disease=value)
-
-    for i in range(matrix_size):
-        for j in range(matrix_size):
-            if i != j and matrix_scaled[i][j] != 0:
-                G.add_edge(i, j, weight=matrix_scaled[i][j])
-    logger.info(G)
-
-    colors = list(mcolors.CSS4_COLORS.keys())
-    diseases = list(set([data[sample_key] for data in all_sample_phenos.values()]))
-    color_map = {disease: colors[i] for i, disease in enumerate(diseases)}
-    node_colors = [
-        color_map[" ".join(G.nodes[node]["disease"].split("_")[:-1])]
-        for node in G.nodes()
-    ]
-
-    pos = nx.spring_layout(G, weight="weight", seed=13)
-    labels = {node: data["label"] for node, data in G.nodes(data=True)}
-    nx.draw(
-        G,
-        pos,
-        labels=labels,
-        node_color=node_colors,
-        with_labels=True,
-        node_size=500,
-        font_size=8,
+    compare_phenos.save_graph(
+        all_sample_phenos=all_sample_phenos,
+        G=graph,
+        sample_key=sample_key,
+        out_png=out_png,
     )
-    plt.savefig(out_png, format="PNG")
 
 
 if __name__ == "__main__":
