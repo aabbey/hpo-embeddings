@@ -14,11 +14,27 @@ import matplotlib.colors as mcolors
 import leidenalg
 import igraph as ig
 
-from hpo_extract import hpo_to_follow_up, extract, generate_in_samples, compare_phenos
+# import argparse
+import fire
+
+from hpo_extract import hpo_to_follow_up, extract, generate_in_samples
+from hpo_extract import compare_phenos
 from hpo_extract.setup_data import TERM_IDS_VECS
 
 
-def run_hpo_to_follow_up(input_dict):
+def run_hpo_to_follow_up(input_dict_path, out_path=""):
+    """Creates follow up questions that will broaden and deepen our understanding of the patient phenotype
+
+    Args:
+        input_dict_path (str): contains patieint_description and hpo_terms.
+        out_path (str): output json with deepen questions and broaden questions.
+
+    Returns:
+        _type_: _description_
+    """
+    with open(input_dict_path, "r") as f:
+        input_dict = json.load(f)
+
     broaden_llm = ChatOpenAI(model=hpo_to_follow_up.MODEL_NAME, temperature=0.0)
     llms = {"broaden_llm": broaden_llm}
     with open("data/hpo_to_follow_up/prompts/broaden_prompts.json", "r") as f:
@@ -28,9 +44,7 @@ def run_hpo_to_follow_up(input_dict):
         input_dict=input_dict, llms=llms, prompts=broaden_prompts
     )
 
-    print(broaden_chain_output)
-    1 / 0
-
+    # Deepen Chain
     deepen_llm = ChatOpenAI(model=hpo_to_follow_up.MODEL_NAME, temperature=0.0)
     extract_excerpts_llm = ChatOpenAI(
         model=hpo_to_follow_up.EXTRACT_EXCERPTS_MODEL_NAME, temperature=0.0
@@ -50,10 +64,18 @@ def run_hpo_to_follow_up(input_dict):
         prompts=all_deepen_llm_prompts,
     )
 
-    return deepen_chain_output
+    if not out_path == "":
+        out_json = {
+            "deepen_chain_output": deepen_chain_output,
+            "broaden_chain_output": broaden_chain_output,
+        }
+        with open(out_path, "w") as f:
+            json.dump(out_json, f)
+
+    return deepen_chain_output, broaden_chain_output
 
 
-def run_extract(input_text):
+def run_extract(input_text, out_path=""):
     extract_llm = ChatOpenAI(model=extract.MODEL_NAME, temperature=0)
     term_list_llm = ChatOpenAI(model=extract.TERM_LIST_MODEL_NAME, temperature=0)
 
@@ -65,7 +87,48 @@ def run_extract(input_text):
         in_text=input_text, llms=llms, prompts=all_extract_prompts
     )
 
+    if not out_path == "":
+        with open(out_path, "w") as f:
+            json.dump(extract_chain_output, f)
+
     return extract_chain_output
+
+
+def run_make_description(input_text):
+    desc_llm = ChatOpenAI(model=extract.DESC_MODEL_NAME, temperature=0)
+
+    llms = {"ex_desc_llm": desc_llm}
+
+    all_extract_prompts = extract.load_desc_prompts()
+
+    desc_chain_output = extract.run_extract_desc_chain(
+        in_text=input_text, llms=llms, prompts=all_extract_prompts
+    )
+
+    return desc_chain_output
+
+
+def run_make_input_dict(input_text_path, hpo_terms_path=None, out_path=""):
+    input_dict = {}
+    with open(input_text_path, "r") as f:
+        input_text = f.read()
+
+    if hpo_terms_path:
+        with open(hpo_terms_path, "r") as f:
+            hpo_terms = json.load(f)
+    else:
+        hpo_terms = run_extract(input_text)
+    desc = run_make_description(input_text)
+
+    input_dict["patieint_description"] = desc
+    input_dict["hpo_terms"] = list(hpo_terms)
+    input_dict["clinician_notes"] = input_text
+
+    if not out_path == "":
+        with open(out_path, "w") as f:
+            json.dump(input_dict, f)
+
+    return input_dict
 
 
 def create_clin_notes(src, from_src="hpo_terms", save=False):
@@ -223,4 +286,11 @@ def run_hpo_graph_cluster(
 
 
 if __name__ == "__main__":
-    pass
+    fire.Fire(
+        {
+            "follow_up": run_hpo_to_follow_up,
+            "extract": run_extract,
+            "make_input_dict": run_make_input_dict,
+            "create_clin_notes": create_clin_notes,
+        }
+    )

@@ -120,7 +120,7 @@ def run_deepen_chain(input_dict, llms, prompts, show_work=False):
     """Runs chain to collect follow up question ideas that will help specify HPO terms that are too general.
 
     Args:
-        input_dict (dict): dict of inputs (patient description, hpo term) and clin notes
+        input_dict (dict): dict of inputs (patient_description, hpo_terms) and clin notes
         llms (dict): each llm used in chain
         prompts (dict): all prompts (as strings) to be used
         show_work (bool, optional): llms explain themselves along the way. Defaults to False.

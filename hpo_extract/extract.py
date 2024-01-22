@@ -18,11 +18,13 @@ from hpo_extract.funcs_for_llms import pass_list, get_term
 
 
 # MODEL_NAME = "gpt-3.5-turbo"
+# DESC_MODEL_NAME = "gpt-3.5-turbo"
 # TERM_LIST_MODEL_NAME = "gpt-3.5-turbo"
 # SIM_SEARCH_MODEL = "gpt-3.5-turbo"
 MODEL_NAME = "gpt-4"
 TERM_LIST_MODEL_NAME = "gpt-4"
 SIM_SEARCH_MODEL = "gpt-4"
+DESC_MODEL_NAME = "gpt-4"
 
 
 def load_prompts():
@@ -30,6 +32,13 @@ def load_prompts():
         extract_prompts = json.load(f)
 
     return extract_prompts
+
+
+def load_desc_prompts():
+    with open("data/extract/prompts/extract_desc_prompts.json", "r") as f:
+        extract_desc_prompts = json.load(f)
+
+    return extract_desc_prompts
 
 
 def load_input():
@@ -99,6 +108,32 @@ def correct_invalid_terms(term_set):
         valid_terms.add(augmented_sim_search(text=term, llm=sim_search_llm))
 
     return valid_terms
+
+
+def run_extract_desc_chain(in_text, llms, prompts, show_work=False):
+    """runs chain to generate a summary of a patient history based on the input notes
+
+    Args:
+        in_text (_type_): input notes
+        llms (_type_): llms to perform reasoning
+        prompts (_type_): llm prompts
+        show_work (bool, optional): _description_. Defaults to False.
+    """
+    all_prompts = initialize_llm_chats(prompts)
+    main_ex_desc_prompts = all_prompts["main_ex_desc_llm"]
+    ex_desc_llm = llms["ex_desc_llm"]
+
+    ex_desc_chat_template = ChatPromptTemplate.from_messages(
+        [
+            main_ex_desc_prompts["system_message"],
+            main_ex_desc_prompts["prompt"],
+        ]
+    )
+    ex_desc_chain = LLMChain(llm=ex_desc_llm, prompt=ex_desc_chat_template)
+    ex_desc_out = ex_desc_chain.run(clin_notes=in_text.strip("\n"))
+    logger.info(ex_desc_out)
+
+    return ex_desc_out
 
 
 def run_extract_chain(in_text, llms, prompts, show_work=False):

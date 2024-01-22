@@ -249,7 +249,7 @@ def calc_sim(list_a, list_b, ic_a, ic_b):
     ic_matrix = ic_b + ic_a[:, None]
     ic_matrix[ic_matrix == 0] = -1
     ic_matrix = -((-ic_matrix) ** 0.5)
-    similarity_matrix = -10 * ((distance_matrix + 0.001) * 10 * (ic_matrix)) ** -1
+    similarity_matrix = 10 * (-1 * ((distance_matrix + 0.001) * 10 * (ic_matrix))) ** -1
 
     norm = np.linalg.norm(similarity_matrix)
     return norm / np.sqrt(len(list_a) * len(list_b))
@@ -274,7 +274,7 @@ def ic_list(term_list, freq_data):
     return -np.log2(np.array(ic_list))
 
 
-def make_sim_graph(all_sample_phenos, sample_key, sim_thresh, cluster_factor):
+def make_adj_mat(all_sample_phenos, sample_key, sim_thresh=0.0, cluster_factor=4):
     master_list = []
     master_list_ic = []
     mapping_key = {}
@@ -289,7 +289,7 @@ def make_sim_graph(all_sample_phenos, sample_key, sim_thresh, cluster_factor):
             mapping_key[(len(master_list) - 1)] = f"{disease_name}_{idx+1}"
 
     matrix_size = len(master_list)
-    matrix = [[0.0 for _ in range(matrix_size)] for _ in range(matrix_size)]
+    matrix = np.zeros((matrix_size, matrix_size))
 
     for i in range(matrix_size):
         for j in range(matrix_size):
@@ -297,19 +297,24 @@ def make_sim_graph(all_sample_phenos, sample_key, sim_thresh, cluster_factor):
                 matrix[i][j] = calc_sim(
                     master_list[i], master_list[j], master_list_ic[i], master_list_ic[j]
                 )
-    matrix_np = np.array(matrix)
     logger.info(mapping_key)
 
-    matrix_np[matrix_np < sim_thresh] = 0
+    matrix[matrix < sim_thresh] = 0
 
-    matrix_scaled = matrix_np**cluster_factor
+    return matrix**cluster_factor, mapping_key
+
+
+def make_sim_graph(all_sample_phenos, sample_key, sim_thresh, cluster_factor):
+    matrix_scaled, mapping_key = make_adj_mat(
+        all_sample_phenos, sample_key, sim_thresh, cluster_factor
+    )
 
     G = nx.Graph()
     for key, value in mapping_key.items():
         G.add_node(key, label=value, disease=value)
 
-    for i in range(matrix_size):
-        for j in range(matrix_size):
+    for i in range(matrix_scaled.shape[0]):
+        for j in range(matrix_scaled.shape[0]):
             if i != j and matrix_scaled[i][j] != 0:
                 G.add_edge(i, j, weight=matrix_scaled[i][j])
     logger.info(G)
@@ -338,3 +343,23 @@ def save_graph(G, all_sample_phenos, sample_key, out_png):
         font_size=8,
     )
     plt.savefig(out_png, format="PNG")
+
+
+def evaluate_matrix(true_matrix, pred_matrix):
+    """returns the precision, recall, and f1 of two matricies or vectors. numpy or tensor"""
+    assert (
+        true_matrix.shape == pred_matrix.shape
+    ), "Both matrices should have the same shape."
+    TP = np.sum((true_matrix == 1) & (pred_matrix == 1))
+    FP = np.sum((true_matrix == 0) & (pred_matrix == 1))
+    TN = np.sum((true_matrix == 0) & (pred_matrix == 0))
+    FN = np.sum((true_matrix == 1) & (pred_matrix == 0))
+    precision = TP / (TP + FP) if (TP + FP) != 0 else 0
+    recall = TP / (TP + FN) if (TP + FN) != 0 else 0
+    f1 = (
+        2 * (precision * recall) / (precision + recall)
+        if (precision + recall) != 0
+        else 0
+    )
+
+    return precision, recall, f1
